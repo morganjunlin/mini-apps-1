@@ -9,15 +9,13 @@
 <body>
   <h1>CSV Report Generator</h1>
   <br />
-  <form method="POST" action="/upload_json">
-    <textarea rows="10" cols="55">
-      Insert stuff here
+  <form method="POST" action="/upload_json" id="convert_csv">
+    <textarea rows="10" cols="55" name="data">
+    Insert JSON here
     </textarea>
     <br />
-    <input type="submit">
+    <input type="submit" value="Download">
   </form>
-
-  <script src="app.js"></script>
 </body>
 </html>
 
