@@ -3,9 +3,10 @@ class App extends React.Component {
     super(props)
 
     this.state = {
-      form_one: true,
-      form_two: false,
-      form_three: false,
+      accountForm: true,
+      addressForm: false,
+      paymentForm: false,
+      submitForm: false,
       name: '',
       email: '',
       password: '',
@@ -19,13 +20,16 @@ class App extends React.Component {
       expiry_date: 0,
       cvv: 0,
       billing_zip: 0,
-      id: 0
+      id: 0,
+      information: []
     }
 
     this.handleCheckout = this.handleCheckout.bind(this)
-    this.handleNext = this.handleNext.bind(this)
+    this.handleAddress = this.handleAddress.bind(this)
+    this.handlePayment = this.handlePayment.bind(this)
     this.handleSubmit = this.handleSubmit.bind(this)
     this.handleInput = this.handleInput.bind(this)
+    this.handleData = this.handleData.bind(this)
   }
 
   handleCheckout(e) {
@@ -42,12 +46,12 @@ class App extends React.Component {
       .catch(err => console.log(`ERROR POSTING: ${err}`))
 
     this.setState({
-      form_one: false,
-      form_two: true
+      accountForm: false,
+      addressForm: true
     })
   }
 
-  handleNext(e) {
+  handleAddress(e) {
     e.preventDefault();
 
     const { address_line_1, address_line_2, city, state, zip, phone_number, id } = this.state
@@ -66,12 +70,12 @@ class App extends React.Component {
       .catch(err => console.log(`ERROR UPDATING: ${err}, ${this.state.id}`))
 
     this.setState({
-      form_two: false,
-      form_three: true
+      addressForm: false,
+      paymentForm: true
     })
   }
 
-  handleSubmit(e) {
+  handlePayment(e) {
     e.preventDefault()
 
     const { credit_card, expiry_date, cvv, billing_zip, id } = this.state
@@ -85,7 +89,17 @@ class App extends React.Component {
         billing_zip
       }
     })
+      .then(() => this.handleData())
       .catch(err => console.log(`ERROR UPDATING: ${err}`))
+
+    this.setState({
+      paymentForm: false,
+      submitForm: true
+    })
+  }
+
+  handleSubmit(e) {
+    e.preventDefault()
 
     alert("Thank you for your purchase!")
     window.location.reload();
@@ -97,8 +111,25 @@ class App extends React.Component {
     })
   }
 
+  handleData() {
+    let arr = []
+    let obj = {}
+
+    for (let key in this.state) {
+      if (key !== 'accountForm' && key !== 'addressForm' && key !== 'paymentForm' && key !== 'submitForm' && key !== 'id' && key !== 'information') {
+        obj[key] = this.state[key]
+        arr.push(obj)
+        obj = {}
+      }
+    }
+
+    this.setState({
+      information: arr
+    })
+  }
+
   render() {
-    if (this.state.form_one) {
+    if (this.state.accountForm) {
       return (
         <div>
           <h1>Multistep Checkout Experience</h1><br />
@@ -106,20 +137,28 @@ class App extends React.Component {
           <AccountForm handleCheckout={this.handleCheckout} handleInput={this.handleInput} />
         </div>
       )
-    } else if (this.state.form_two) {
+    } else if (this.state.addressForm) {
       return (
         <div>
           <h1>Multistep Checkout Experience</h1><br />
           <h2>Address Form</h2>
-          <AddressForm handleNext={this.handleNext} handleInput={this.handleInput} />
+          <AddressForm handleAddress={this.handleAddress} handleInput={this.handleInput} />
         </div>
       )
-    } else if (this.state.form_three) {
+    } else if (this.state.paymentForm) {
       return (
         <div>
           <h1>Multistep Checkout Experience</h1><br />
           <h2>Payment Form</h2>
-          <PaymentForm handleSubmit={this.handleSubmit} handleInput={this.handleInput} />
+          <PaymentForm handlePayment={this.handlePayment} handleInput={this.handleInput} />
+        </div>
+      )
+    } else if (this.state.submitForm) {
+      return (
+        <div>
+          <h1>Multistep Checkout Experience</h1><br />
+          <h2>Confirm Information</h2>
+          <SubmitForm handleSubmit={this.handleSubmit} information={this.state.information} />
         </div>
       )
     }
@@ -136,7 +175,7 @@ const AccountForm = (props) => (
 )
 
 const AddressForm = (props) => (
-  <form id="addressForm" onSubmit={props.handleNext}>
+  <form id="addressForm" onSubmit={props.handleAddress}>
     Address Line 1: <input type="text" id="address_line_1" onChange={props.handleInput} /> <br />
     Address Line 2: <input type="text" id="address_line_2" onChange={props.handleInput} /> <br />
     City: <input type="text" id="city" onChange={props.handleInput} /> <br />
@@ -148,13 +187,32 @@ const AddressForm = (props) => (
 )
 
 const PaymentForm = (props) => (
-  <form id="paymentForm" onSubmit={props.handleSubmit}>
+  <form id="paymentForm" onSubmit={props.handlePayment}>
     Credit Card: <input type="number" id="credit_card" onChange={props.handleInput} /> <br />
     Expiry Date: <input type="number" id="expiry_date" onChange={props.handleInput} /> <br />
     CVV: <input type="number" id="cvv" onChange={props.handleInput} /> <br />
     Billing Zip: <input type="number" id="billing_zip" onChange={props.handleInput} /> <br />
-    <input type="submit" />
+    <input type="submit" value="Next" />
   </form>
+)
+
+const SubmitForm = (props) => (
+  <form id="submitForm" onSubmit={props.handleSubmit}>
+    <List information={props.information} /> <br />
+    <input type="submit" value="Purchase" />
+  </form>
+)
+
+const List = (props) => (
+  <div>
+    {props.information.map((item, index) => <ListItem key={index} item={item} />)}
+  </div>
+)
+
+const ListItem = (props) => (
+  <div>
+    {Object.keys(props.item)[0]}: {Object.values(props.item)[0]}
+  </div>
 )
 
 ReactDOM.render(<App />, document.getElementById('app'));
