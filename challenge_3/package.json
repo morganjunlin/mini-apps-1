@@ -16,7 +16,7 @@
     "axios": "^0.18.0",
     "express": "^4.16.4",
     "live-server": "^1.2.1",
-    "mongoose": "^5.5.6",
+    "mongoose": "^5.7.5",
     "mysql2": "^1.6.5",
     "nodemon": "^1.19.0",
     "path": "^0.12.7",
